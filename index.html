@@ -9,14 +9,29 @@ and open the template in the editor.
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <script src="js/jquery-1.11.2.min.js"></script>
         <script>
-            jQuery(document).ready(function(){
-                console.log("hello");
+           $(document).ready(function(){
+                
+                //compute btn
+                $("#computeBtn").click(function(e){
+                    console.log("hi");
+                     $.ajax({
+                         url: "http://localhost:1337",
+                         }).done(function(msg){
+                             console.log(msg);
+                         });
+                    
+                    e.preventDefault();
+                    
+                });
+                
+                
+                
             });
             
         </script>
             
     </head>
     <body>
-        <div>TODO write content</div>
+        <div><a href="#" id="computeBtn">Compute</a></div>
     </body>
 </html>
