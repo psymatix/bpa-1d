@@ -8,30 +8,28 @@ and open the template in the editor.
         <title>BPA 1D</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <script src="js/jquery-1.11.2.min.js"></script>
-        <script>
-           $(document).ready(function(){
-                
-                //compute btn
-                $("#computeBtn").click(function(e){
-                    console.log("hi");
-                     $.ajax({
-                         url: "http://localhost:1337",
-                         }).done(function(msg){
-                             console.log(msg);
-                         });
-                    
-                    e.preventDefault();
-                    
-                });
-                
-                
-                
-            });
-            
-        </script>
+        <script src="js/client.js"></script>
+       
             
     </head>
     <body>
         <div><a href="#" id="computeBtn">Compute</a></div>
+        <h2>Computation Summary</h2>
+        <div>
+            <strong>Original Peak:</strong> <span data-show="originalPeak"></span><br>
+            <strong>Final Peak:</strong> <span data-show="finalPeak"></span><br>
+            <strong>Max kWh</strong> <span data-show="maxEnergy"></span><br>
+            <strong>Original Energy Consumed (kWh/%)</strong> <span data-show="originalEnergy"></span><br>
+            <strong>Final Energy Consumed (kWh/%)</strong> <span data-show="finalEnergy"></span><br>
+            <strong>Storage combination:</strong> <span data-show="storageCombination"></span><br>
+            <strong>Storage Used in Charge cycle:</strong> <span data-show="storageCharged"></span><br>
+            <strong>Storage Used in Discharge cycle:</strong> <span data-show="storageDischarged"></span><br>
+        </div> 
+        <script>
+           $(document).ready(function(){
+               Client.init();
+            });
+            
+        </script>
     </body>
 </html>
