@@ -12,6 +12,9 @@ Client.init = function(){
                             //summary
                              Client.showSummary(msg);
                              
+                             //charts 
+                             Client.plotChart(msg.originalBins, {"id": "originalProfileChart", "width": 400, "height": 200});
+                             
                          });
                     
                     e.preventDefault();
@@ -77,5 +80,48 @@ Client.showSummary = function($res){
   $('[data-show="storageDischarged"]').text($res.totalUnpacked + "kWh");
   
   
+};
+
+Client.plotChart = function(dataset, $elemdata){
+    
+    //prepare data
+    var data = dataset.map(function(v){
+        return +v.capacityUsed; //force to be a number
+    });
+    
+    var labels = dataset.map(function(v){
+        return v.position;
+    });
+    
+    var y = d3.scale.linear()
+            .domain([0,10])
+            .range([$elemdata.height,0]);
+    
+    var chart = d3.select("#"+$elemdata.id)
+            .attr("width", $elemdata.width)
+            .attr("height", $elemdata.height);
+    
+    var barWidth = $elemdata.width / data.length;
+    var bar = chart.selectAll("g")
+            .data(data)
+            .enter().append("g")
+            .attr("transform", function(d,i){ return "translate (" + i * barWidth + ",0)"; });
+    
+    bar.append("rect")
+            .attr("y", function(d){return d; })
+            .attr("height", function(d){ return $elemdata.height - d;})
+            .attr("width", barWidth - 1);
+            
+    bar.append("text")
+         .attr("x", barWidth / 2)
+        .attr("y", function(d) { return y(d) + 3; })
+        .attr("dy", ".75em")
+        .text(function(d) { return d; });
+            
+    
+    
+    
+    
+    
 };
 
