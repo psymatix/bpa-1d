@@ -12,10 +12,36 @@ Client.init = function(){
                             //summary
                              Client.showSummary(msg);
                              
+                             
+                       //use items to show charging and discharging distinctly
+                          
+                          var chargeCycle = [], dischargeCycle = [];
+                          msg.packedBins.forEach(function(v){
+                                var cap = 0;
+                                v.items.forEach(function(w){
+                                    cap += w.size;
+                                });
+                       
+                                chargeCycle.push({"capacityUsed":cap, "position":v.position});
+                          });
+                          
+                           msg.inverseBins.forEach(function(v){
+                                var cap = 0;
+                                v.items.forEach(function(w){
+                                    cap += w.size;
+                                });
+                       
+                                dischargeCycle.push({"capacityUsed":cap, "position":v.position});
+                          });
+                          
+                             
                              //charts 
                              
                                 //original bins 
                                 Client.plotChart(msg.originalBins, {"id": "originalProfileChart", "width": 400, "height": 200});
+                                
+                                  //charging items
+                                Client.plotChart(chargeCycle, {"id": "chargeCycleChart", "width": 400, "height": 200, "fill":"#FF4747"});
                                 
                                  //charging bins 
                                 Client.plotChart(msg.packedBins, {"id": "chargingProfileChart", "width": 400, "height": 200});
@@ -24,14 +50,16 @@ Client.init = function(){
                                 
                                  Client.plotChart(msg.originalBinsInverted, {"id": "originalProfileInvertedChart", "width": 400, "height": 200});
                                 
+                                 //discharging cycle
+                                Client.plotChart(dischargeCycle, {"id": "dischargeCycleChart", "width": 400, "height": 200, "fill":"#70B870"});
+                                
                                  //discharging bins 
                                 Client.plotChart(msg.inverseBins, {"id": "dischargingProfileChart", "width": 400, "height": 200});
                                 
                                  //output bins 
                                 Client.plotChart(msg.outputBins, {"id": "outputProfileChart", "width": 400, "height": 200});
                                 
-                          
-                                
+                     
                              
                          });
                     
@@ -125,7 +153,7 @@ Client.plotChart = function(dataset, $elemdata){
     
     var width = $elemdata.width - margin.left - margin.right,
             height = $elemdata.height - margin.top - margin.bottom; // 40 for x-axis fix this later
-            console.log(height);
+        
     
     //prepare data
     var data = dataset.map(function(v){
@@ -173,13 +201,14 @@ Client.plotChart = function(dataset, $elemdata){
                .data(dataset)
                .enter()
                .append("g") 
-               .attr("class", "bar")
+               .attr("class", "bar");
              
        
     bar.append("rect")
                .attr("transform", function(d,i){ return "translate (" + x(d.position) + "," +  y(d.capacityUsed) + ")"; })
                .attr("height", function(d) { return height - y(d.capacityUsed); })
-               .attr("width", x.rangeBand());    
+               .attr("width", x.rangeBand())
+               .attr("style", function(){ if($elemdata.fill){return "fill: " + $elemdata.fill + ";"; }else{ return "";} });    
     
     bar.append("text")
         .attr("x",  function(d){ return  x(d.position) + (x.rangeBand() / 2);})
