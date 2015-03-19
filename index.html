@@ -24,6 +24,25 @@ and open the template in the editor.
   text-anchor: end;
 }
 
+.axis text {
+  font: 10px sans-serif;
+  fill: #000;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.chartWrapper {
+    float: left;
+    clear: none;
+    margin: 15px;
+    overflow: hidden;
+}
+
 </style>  
     </head>
     <body>
@@ -38,9 +57,33 @@ and open the template in the editor.
             <strong>Storage combination:</strong> <span data-show="storageCombination"></span><br>
             <strong>Storage Used in Charge cycle:</strong> <span data-show="storageCharged"></span><br>
             <strong>Storage Used in Discharge cycle:</strong> <span data-show="storageDischarged"></span><br>
+            <strong>Storage not used in Charge cycle:</strong> <span data-show="packMisfits"></span><br>
+            <strong>Storage not used in Discharge cycle:</strong> <span data-show="unpackMisfits"></span><br>
         </div>
-        <div>
+        <div class="chartWrapper">
+              <h3>Original Profile</h3>
             <svg id="originalProfileChart" class="chart"></svg>
+        </div>
+        
+        
+        <div class="chartWrapper">
+            <h3>Charging Profile</h3>
+            <svg id="chargingProfileChart" class="chart"></svg>
+        </div>
+        
+         <div class="chartWrapper">
+            <h3>Original Profile Inverted</h3>
+            <svg id="originalProfileInvertedChart" class="chart"></svg>
+        </div>
+        
+        <div class="chartWrapper">
+              <h3>Discharging Profile</h3>
+            <svg id="dischargingProfileChart" class="chart"></svg>
+        </div>
+        
+        <div class="chartWrapper">
+              <h3>Final Profile</h3>
+            <svg id="outputProfileChart" class="chart"></svg>
         </div>
         
         <script>

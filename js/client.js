@@ -13,7 +13,25 @@ Client.init = function(){
                              Client.showSummary(msg);
                              
                              //charts 
-                             Client.plotChart(msg.originalBins, {"id": "originalProfileChart", "width": 400, "height": 200});
+                             
+                                //original bins 
+                                Client.plotChart(msg.originalBins, {"id": "originalProfileChart", "width": 400, "height": 200});
+                                
+                                 //charging bins 
+                                Client.plotChart(msg.packedBins, {"id": "chargingProfileChart", "width": 400, "height": 200});
+                                
+                                //originalBins inverted
+                                
+                                 Client.plotChart(msg.originalBinsInverted, {"id": "originalProfileInvertedChart", "width": 400, "height": 200});
+                                
+                                 //discharging bins 
+                                Client.plotChart(msg.inverseBins, {"id": "dischargingProfileChart", "width": 400, "height": 200});
+                                
+                                 //output bins 
+                                Client.plotChart(msg.outputBins, {"id": "outputProfileChart", "width": 400, "height": 200});
+                                
+                          
+                                
                              
                          });
                     
@@ -79,10 +97,35 @@ Client.showSummary = function($res){
   //storage discharged
   $('[data-show="storageDischarged"]').text($res.totalUnpacked + "kWh");
   
+  //storage unused in charge
+  $('[data-show="packMisfits"]').text(function(){
+                                            var ret = ""; 
+                                            $res.packMisfits.forEach(function(v){
+                                                    ret += v.size + ",";
+                                             }); 
+                                             return ret;
+
+                                        });
+                                        
+                                        //storage unused in charge
+  $('[data-show="unpackMisfits"]').text(function(){
+                                            var ret = ""; 
+                                            $res.unpackMisfits.forEach(function(v){
+                                                    ret += v.size + ",";
+                                             }); 
+                                             return ret;
+
+                                        });
   
 };
 
 Client.plotChart = function(dataset, $elemdata){
+    
+    var margin = {top: 20, right: 30, bottom: 30, left: 40};
+    
+    var width = $elemdata.width - margin.left - margin.right,
+            height = $elemdata.height - margin.top - margin.bottom; // 40 for x-axis fix this later
+            console.log(height);
     
     //prepare data
     var data = dataset.map(function(v){
@@ -94,30 +137,57 @@ Client.plotChart = function(dataset, $elemdata){
     });
     
     var y = d3.scale.linear()
-            .domain([0,10])
-            .range([$elemdata.height,0]);
+            .domain([0,10]) // maximum is 10
+            .range([height,0]);
+    
+    var x = d3.scale.ordinal()
+            .domain(dataset.map(function(d) {  return d.position; })) //labels for each hour
+            .rangeRoundBands([0, width], .1);
+            //.range(data);
     
     var chart = d3.select("#"+$elemdata.id)
-            .attr("width", $elemdata.width)
-            .attr("height", $elemdata.height);
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
-    var barWidth = $elemdata.width / data.length;
-    var bar = chart.selectAll("g")
-            .data(data)
-            .enter().append("g")
-            .attr("transform", function(d,i){ return "translate (" + i * barWidth + ",0)"; });
+     var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
     
+    chart.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+            
+    var yAxis = d3.svg.axis()
+                .scale(y)
+                .orient("left");
+        
+    chart.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+    
+            
+    var bar = chart.selectAll(".bar")
+               .data(dataset)
+               .enter()
+               .append("g") 
+               .attr("class", "bar")
+             
+       
     bar.append("rect")
-            .attr("y", function(d){return d; })
-            .attr("height", function(d){ return $elemdata.height - d;})
-            .attr("width", barWidth - 1);
-            
+               .attr("transform", function(d,i){ return "translate (" + x(d.position) + "," +  y(d.capacityUsed) + ")"; })
+               .attr("height", function(d) { return height - y(d.capacityUsed); })
+               .attr("width", x.rangeBand());    
+    
     bar.append("text")
-         .attr("x", barWidth / 2)
-        .attr("y", function(d) { return y(d) + 3; })
+        .attr("x",  function(d){ return  x(d.position) + (x.rangeBand() / 2);})
+        .attr("y", function(d){ return y(d.capacityUsed) + 3;})
         .attr("dy", ".75em")
-        .text(function(d) { return d; });
-            
+        .text(function(d) { return d.capacityUsed; });
+
+   
     
     
     
