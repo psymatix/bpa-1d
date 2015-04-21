@@ -3,7 +3,7 @@ var Client = Client || {};
 Client.init = function(){
   //compute btn
                 $("#computeBtn").click(function(e){
-                    console.log("hi");
+                  
                      $.ajax({
                          url: "http://localhost:1337",
                          }).done(function(msg){
@@ -38,26 +38,26 @@ Client.init = function(){
                              //charts 
                              
                                 //original bins 
-                                Client.plotChart(msg.originalBins, {"id": "originalProfileChart", "width": 400, "height": 200});
+                                Client.plotChart(msg.originalBins, {"id": "originalProfileChart", "width": 800, "height": 600});
                                 
                                   //charging items
-                                Client.plotChart(chargeCycle, {"id": "chargeCycleChart", "width": 400, "height": 200, "fill":"#FF4747"});
+                                Client.plotChart(chargeCycle, {"id": "chargeCycleChart", "width": 800, "height": 600, "fill":"#FF4747"});
                                 
                                  //charging bins 
-                                Client.plotChart(msg.packedBins, {"id": "chargingProfileChart", "width": 400, "height": 200});
+                                Client.plotChart(msg.packedBins, {"id": "chargingProfileChart", "width": 800, "height": 600});
                                 
                                 //originalBins inverted
                                 
-                                 Client.plotChart(msg.originalBinsInverted, {"id": "originalProfileInvertedChart", "width": 400, "height": 200});
+                                 Client.plotChart(msg.originalBinsInverted, {"id": "originalProfileInvertedChart", "width": 800, "height": 600});
                                 
                                  //discharging cycle
-                                Client.plotChart(dischargeCycle, {"id": "dischargeCycleChart", "width": 400, "height": 200, "fill":"#70B870"});
+                                Client.plotChart(dischargeCycle, {"id": "dischargeCycleChart", "width": 800, "height": 600, "fill":"#70B870"});
                                 
                                  //discharging bins 
-                                Client.plotChart(msg.inverseBins, {"id": "dischargingProfileChart", "width": 400, "height": 200});
+                                Client.plotChart(msg.inverseBins, {"id": "dischargingProfileChart", "width": 800, "height": 600});
                                 
                                  //output bins 
-                                Client.plotChart(msg.outputBins, {"id": "outputProfileChart", "width": 400, "height": 200});
+                                Client.plotChart(msg.outputBins, {"id": "outputProfileChart", "width": 800, "height": 600});
                                 
                      
                              
