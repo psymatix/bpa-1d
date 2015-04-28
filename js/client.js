@@ -186,7 +186,12 @@ Client.plotChart = function(dataset, $elemdata){
     chart.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
+    .call(xAxis)
+      .append("text")
+      .attr("x", width)
+      .attr("dy", "2.8em")
+      .style("text-anchor", "end")
+      .text("Time of Day (Hour)");
             
     var yAxis = d3.svg.axis()
                 .scale(y)
@@ -194,7 +199,13 @@ Client.plotChart = function(dataset, $elemdata){
         
     chart.append("g")
       .attr("class", "y axis")
-      .call(yAxis);
+      .call(yAxis)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -28)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Power (PU)");
     
             
     var bar = chart.selectAll(".bar")
