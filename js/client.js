@@ -235,3 +235,7 @@ Client.plotChart = function(dataset, $elemdata){
     
 };
 
+Client.plotCurve = function(dataset, elemdata){
+    
+};
+
