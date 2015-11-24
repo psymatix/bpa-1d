@@ -26,8 +26,10 @@ var Chromosome = function(id){
                             }
                             var seqDisplay = $('[data-id="' + id + '"');
                             seqDisplay.text($this.sequence);
-                            seqDisplay.next().text($this.score);
+                            seqDisplay.next(".score").text($this.score);
                             
+                            seqDisplay.data("ready","yes");
+                            console.log("hohoh", seqDisplay.data());
                    });
 
 };
@@ -120,7 +122,7 @@ Population.prototype.display = function(){
                 //not ready yet -- show when ready
                 $(".sequence", $html).text(this.members[i].sequence);
                 $(".score", $html).text(this.members[i].score);
-                
+                $(".sequence", $html).attr("data-ready","no");
             }
             
         $(".sequence", $html).attr("data-id",this.members[i].id);    
