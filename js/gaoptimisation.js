@@ -3,6 +3,38 @@
  * 
  */
 
+
+
+//chromosomes functions i.e. schedules
+
+//methods - mate, score, mutate
+
+
+var Chromosome = function(id){
+    this.score = 0; //all start with a low score
+    this.id = id
+   
+    var $this = this; // store scope reference to the chromosome for ajax call
+
+    //get profile objects from http request
+        $.ajax({ url: "http://localhost:1337" }).done(function(msg){
+                       
+                           $this.sequence = ""; //string representing output profile sequence
+                           $this.schedule = msg; 
+                           for(var i=0; i<$this.schedule.outputBins.length;i++){
+                               $this.sequence += $this.schedule.outputBins[i].capacityUsed.toString();
+                            }
+                            var seqDisplay = $('[data-id="' + id + '"');
+                            seqDisplay.text($this.sequence);
+                            seqDisplay.next().text($this.score);
+                            
+                   });
+
+};
+
+
+
+
 /* 
  * Population methods: populate, sort, kill
  */
@@ -19,9 +51,11 @@ var Population = function(size,maxGeneration){
     this.generationTolerance = 20;
     
     //add new members until target size is reached
+    id=0;
     while(size--){
-      var chromosome = new Chromosome(); // chromosome is an output schedule
+      var chromosome = new Chromosome(id); // chromosome is an output schedule
       this.members.push(chromosome);
+      id++;
     }
     
     //set base sequence once, based on original profile in one of the members
@@ -30,20 +64,7 @@ var Population = function(size,maxGeneration){
 };
 
 
-Population.prototype.populate = function(size){
-    //add new members from scratch  
-    while(size--){
-      
-        if(this.members.length < this.size){
-            var chromosome = new Chromosome(); // chromosome is an output schedule
-            this.members.push(chromosome);
-        }
-      
-    }
-    
-};
-
-Popualation.prototype.generation = function(){
+Population.prototype.generation = function(){
     
      for (var i = 0; i < this.members.length; i++) {
                 this.members[i].getscore();    
@@ -76,38 +97,37 @@ Population.prototype.sort = function(){
     this.members.sort(function(a, b) {
                 return a.score - b.score;
         });
+     
+     //attach key as id after sort -- important for display
+    for(i=0; i<this.members.length;i++){
+       this.members[i].id = i;  
+    }
+        
 };
 
 Population.prototype.display = function(){
   //show current generation sequence, score, base sequence and generation count
-   var displayElem = $("#display");
+   var displayArea = $("#generationList"),
+           $template = "<ul>" + $(".chromosomeInfo").eq(0).html() + "</ul>";
+   
+   displayArea.empty(); 
+   for(var i=0; i<this.members.length; i++){
+
+        $html = ""; //reset
+        $html =  $.parseHTML($template);
+            
+        if(typeof this.members[i].sequence != "undefined"){  
+                //not ready yet -- show when ready
+                $(".sequence", $html).text(this.members[i].sequence);
+                $(".score", $html).text(this.members[i].score);
+                
+            }
+            
+        $(".sequence", $html).attr("data-id",this.members[i].id);    
+        displayArea.append( $html );
+     
+   }
    
     
 };
 
-
-//chromosomes functions i.e. schedules
-
-//methods - mate, score, mutate
-
-
-var Chromosome = function(){
-    this.score = 0; //all start with a low score
-    
-    this.sequence = ""; //string representing output profile sequence
-    
-    //get profile objects from http request
-        $.ajax({ url: "http://localhost:1337" }).done(function(msg){
-                             this.schedule = msg;
-                         });
-    
-    for(var i=0; i<this.schedule.outputBins.length;i++){
-        this.sequence += this.schedule.outputBins[i].capacityUsed.toString();
-    }
-    
-    console.log(this.sequence);
-    
-    
-    
-    
-};

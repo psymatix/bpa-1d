@@ -9,8 +9,34 @@ and open the template in the editor.
         <title>GA optimisation</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width">
+        <style>
+            ul {
+                min-width: 450px;
+                list-style: none;
+                clear: both;
+                float: left;
+                margin: 0px;
+                padding: 0px;
+            }
+            
+            li {
+               clear: none;
+               float: left;
+               border: 1px solid #ccc;
+               padding: 10px;
+            }
+            
+            .sequence {
+                min-width: 350px;
+            }
+            
+            .score {
+                min-width: 50px;
+            }
+        </style>
         <script src="js/jquery-1.11.2.min.js"></script>
-        <script src="js/client.js"></script>
+        <script src="js/gaoptimisation.js"></script>
+       
     </head>
     <body>
         <div>
@@ -22,5 +48,10 @@ and open the template in the editor.
         <div id="generationList">
             
         </div>
+        
+        <script type="text/javascript">
+            var myGA = new Population(10, 500);
+           setTimeout(function(){myGA.display();}, 500);
+        </script>
     </body>
 </html>
