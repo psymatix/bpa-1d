@@ -31,7 +31,11 @@ and open the template in the editor.
             }
             
             .score {
-                min-width: 50px;
+               width: 150px;
+            }
+            
+            .components {
+                width: 120px;
             }
         </style>
         <script src="js/jquery-1.11.2.min.js"></script>
@@ -43,6 +47,9 @@ and open the template in the editor.
             <ul class="chromosomeInfo">
                 <li class="sequence">Sequence</li>
                 <li class="score">Score</li>
+                 <li class="components" data-component-type="peak_shave">Peak Shave Amt</li>
+                 <li class="components" data-component-type="unique_demands">Unique Demands</li>
+                 <li class="components" data-component-type="levelling">Levelling</li>
              </ul>
         </div>
         <div id="generationList">
@@ -50,8 +57,8 @@ and open the template in the editor.
         </div>
         
         <script type="text/javascript">
-            var myGA = new Population(10, 500);
-           setTimeout(function(){myGA.display();}, 500);
+            var myGA = new Population(10, 10);
+           setTimeout(function(){myGA.generation();}, 500);
         </script>
     </body>
 </html>
