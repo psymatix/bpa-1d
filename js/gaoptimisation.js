@@ -10,7 +10,12 @@
 //methods - mate, score, mutate
 
 
-var Chromosome = function(id, src){
+var Chromosome = function(id, src, template){
+    
+    //id
+    //src = output bin list
+    // template = another chromosome for copying constants
+    
     this.score = 0; //all start with a low score
     this.id = id;
    
@@ -32,8 +37,12 @@ var Chromosome = function(id, src){
         
         this.schedule = {};
         this.schedule.outputBins = src;
+        this.items = [];
         
-        //copy other properties from refObj
+        //copy other properties from refObj -- check ref 
+        this.schedule.parameters = template.schedule.parameters;
+        
+        //compute items, packed and unpacked etc
         
     }
 };
@@ -93,18 +102,6 @@ Chromosome.prototype.stringifySchedule = function(){
 };
 
 
-var clone = function(obj){
-    // Handle Object
-    if (obj instanceof Object) {
-        copy = {};
-        for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
-        }
-        return copy;
-    }
-
-};
-
 Chromosome.prototype.mate = function(chromodeux){
     /*
      * 1. Swap profiles at center point
@@ -124,12 +121,10 @@ Chromosome.prototype.mate = function(chromodeux){
   child1 =  child1.concat(child2_half); 
   child2 = child2.concat(child1_half);
    
-   //make them into chromosome objects by cloning the others
-   var child1Chromosome = $.extend({},this),  child2Chromosome = $.extend({},this);
-   child1Chromosome.schedule.outputBins = child1; child2Chromosome.schedule.outputBins = child2;
+   //make them into chromosome objects by using template of the already made chromosomes
+   var child1Chromosome = new Chromosome(0,child1,this), child2Chromosome = new Chromosome(0,child2,this);
   
-   console.log("chrom1", this.stringifySchedule(),"chrom2", chromodeux.stringifySchedule());
-   console.log("child1", child1Chromosome.stringifySchedule(), "child2", child2Chromosome.stringifySchedule());
+  //change properties of original profile to see impact on other objectss
    
 
 
