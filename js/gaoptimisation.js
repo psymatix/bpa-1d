@@ -7,6 +7,41 @@
 
 //chromosomes functions i.e. schedules
 
+//reusable objects from server side, watch changes in properties and replicate them here
+
+
+var item = function(size){
+    var i = {};
+    i.size = parseInt(size);
+    i.used = false;
+    i.bin = null;
+    i.unpacked = false;
+    i.unpackBin = null;
+    i.packPosition = null;
+    i.unpackPosition = null;
+    i.misfit = false;
+    i.unpackmisfit = false;
+    return i;
+};
+
+
+
+var bin = function(id, size, capacityUsed){
+    var b = {};
+    b.id = id;
+    b.size = parseInt(size);
+    b.capacityUsed = capacityUsed ? parseInt(capacityUsed) : 0;
+    b.open = true;
+    b.items = [];
+    b.position = null; // for time period in profile
+    b.totalPacked = 0;
+    b.totalUnpacked = 0;
+    
+    return b;
+    
+};
+
+
 //methods - mate, score, mutate
 
 
@@ -37,12 +72,57 @@ var Chromosome = function(id, src, template){
         
         this.schedule = {};
         this.schedule.outputBins = src;
-        this.items = [];
+        this.items = []; //list of items as a result of this formation
         
         //copy other properties from refObj -- check ref 
-        this.schedule.parameters = template.schedule.parameters;
         
-        //compute items, packed and unpacked etc
+        this.schedule.originalBins = template.schedule.originalBins.slice(); 
+        this.schedule.parameters = {}; // -- parameters
+       
+        //prevent referential copying
+        for(var prop in template.schedule.parameters){
+            if (template.schedule.parameters.hasOwnProperty(prop)) {
+                    if(!$.isArray(template.schedule.parameters[prop])){
+                        this.schedule.parameters[prop] = template.schedule.parameters[prop];
+                    }else{
+                        this.schedule.parameters[prop] = template.schedule.parameters[prop].slice();
+                    }
+                }
+                 
+              
+        }
+       
+        //compute items, packed and unpacked, bins, misfits etc, parameters object update
+        //loop through original bins and make comparison
+        var diff = 0, diffArray = [];
+        for (var i=0; i<this.schedule.originalBins.length; i++){
+            //check if it is charging or discharging +ve is charge, -ve Discharge
+          diff = this.schedule.outputBins[i].capacityUsed - this.schedule.originalBins[i].capacityUsed; 
+          //fill up array to show difference from original value
+          diffArray.push(diff);
+         
+         //clear out bin items and place if there is a need
+         this.schedule.outputBins[i].items = [];
+         
+         //generate items
+            if(diff>0){
+                var it = new item(diff);
+                it.bin = i;
+                it.packPosition =  this.schedule.outputBins[i].position;
+                it.used = true;
+                
+                //add it to the items array for this bin and the items array for the schedule
+                
+            }else if(diff < 0){
+                
+                console.log(diff);
+            }
+            
+        }
+        
+         console.log(diffArray);
+        
+        //compute sequence and score
         
     }
 };
@@ -74,17 +154,22 @@ Chromosome.prototype.scoreFunction = function(){
  var leveldiff = Number( finalProfile[0].capacityUsed ) -  Number( finalProfile[ finalProfile.length -1 ].capacityUsed );
  
  //3. unique demands -- perhaps only on integer forms
- var uniqueDemands = [];
+ var uniqueDemands = []; var diff = 0, diffArray = [];
  
  for(var i = 0; i<finalProfile.length; i++){
     if(uniqueDemands.indexOf( finalProfile[i].capacityUsed ) == -1 ){
         uniqueDemands.push(finalProfile[i].capacityUsed);
     }
+    
+    //store diff of charge or discharge
+    diff = finalProfile[i].capacityUsed - originalProfile[i].capacityUsed;
+    diffArray.push(diff);
+    
  }
  
  var uniqueDemandsCount = uniqueDemands.length;
- 
- $this.scoreComponents = {"peakShaveAmount":peakshaveamount, "levelling":leveldiff, "uniqueDemands":uniqueDemands};
+ var diffsequence = diffArray.join(",");
+ $this.scoreComponents = {"peakShaveAmount":peakshaveamount, "levelling":leveldiff, "uniqueDemands":uniqueDemands, "diffsequence":diffsequence};
  
   $this.score = peakshaveamount + Math.pow(uniqueDemandsCount, -1) + Math.pow(leveldiff, -1);
   
@@ -109,7 +194,7 @@ Chromosome.prototype.mate = function(chromodeux){
      * 3. calculate other parameters such as total packed and total unpacked for new schedules
      */
   
-  console.log(this);
+  
   var pivot = Math.round(this.schedule.outputBins.length / 2); // mate at center point of length
   
   var child1 = this.schedule.outputBins.slice(), child2 = chromodeux.schedule.outputBins.slice(); 
@@ -118,9 +203,9 @@ Chromosome.prototype.mate = function(chromodeux){
    var child1_half = child1.splice(pivot), child2_half = child2.splice(pivot);
    
    //swap each others wives -- moral dilemma lol
-  child1 =  child1.concat(child2_half); 
+  child1 = child1.concat(child2_half); 
   child2 = child2.concat(child1_half);
-   
+   console.log(this);
    //make them into chromosome objects by using template of the already made chromosomes
    var child1Chromosome = new Chromosome(0,child1,this), child2Chromosome = new Chromosome(0,child2,this);
   
@@ -232,8 +317,9 @@ Population.prototype.display = function(){
                 $('[data-component-type="peak_shave"]', $html).text($chromosome.scoreComponents.peakShaveAmount);
                 $('[data-component-type="unique_demands"]', $html).text($chromosome.scoreComponents.uniqueDemands.length);
                 $('[data-component-type="levelling"]', $html).text($chromosome.scoreComponents.levelling);
+                $('[data-component-type="diffsequence"]', $html).text($chromosome.scoreComponents.diffsequence);
                 
-                //set flag
+            //set flag
                 $(".sequence", $html).attr("data-ready","yes");
             }else{
                 //set flag and add a listener function to check when it is ready -- custom event?
