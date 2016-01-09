@@ -42,6 +42,22 @@ var bin = function(id, size, capacityUsed){
 };
 
 
+var copyObj = function(srcobj, destobj){
+      //prevent referential copying
+        for(var prop in srcobj){
+            if (srcobj.hasOwnProperty(prop)) {
+                    if(!$.isArray(srcobj[prop])){
+                        destobj[prop] = srcobj[prop];
+                    }else{
+                        destobj[prop] = srcobj[prop].slice();
+                    }
+                }
+                 
+              
+        }
+    
+}
+
 //methods - mate, score, mutate
 
 
@@ -71,38 +87,28 @@ var Chromosome = function(id, src, template){
         //create object here and use src as output bins schedule;
         
         this.schedule = {};
-        this.schedule.outputBins = src;
+        this.schedule.outputBins = src.slice();
         this.items = []; //list of items as a result of this formation
         
-        //copy other properties from refObj -- check ref 
+        //copy other properties from refObj without copying references
         
         this.schedule.originalBins = template.schedule.originalBins.slice(); 
         this.schedule.parameters = {}; // -- parameters
        
         //prevent referential copying
-        for(var prop in template.schedule.parameters){
-            if (template.schedule.parameters.hasOwnProperty(prop)) {
-                    if(!$.isArray(template.schedule.parameters[prop])){
-                        this.schedule.parameters[prop] = template.schedule.parameters[prop];
-                    }else{
-                        this.schedule.parameters[prop] = template.schedule.parameters[prop].slice();
-                    }
-                }
-                 
-              
-        }
+        copyObj(template.schedule.parameters, this.schedule.parameters);
        
         //compute items, packed and unpacked, bins, misfits etc, parameters object update
         //loop through original bins and make comparison
-        var diff = 0, diffArray = [];
+        var diff = 0, diffArray = [], difftotal = 0;
         for (var i=0; i<this.schedule.originalBins.length; i++){
             //check if it is charging or discharging +ve is charge, -ve Discharge
           diff = this.schedule.outputBins[i].capacityUsed - this.schedule.originalBins[i].capacityUsed; 
           //fill up array to show difference from original value
-          diffArray.push(diff);
+          diffArray.push(diff); difftotal += diff;
          
-         //clear out bin items and place if there is a need
-         this.schedule.outputBins[i].items = [];
+         //clear out all bin items and place if there is a need
+         this.schedule.outputBins[i].items = []; dischargeItems = [];
          
          //generate items
             if(diff>0){
@@ -112,18 +118,22 @@ var Chromosome = function(id, src, template){
                 it.used = true;
                 
                 //add it to the items array for this bin and the items array for the schedule
+                this.schedule.outputBins[i].items.push(it);
+                this.items.push(it);
                 
             }else if(diff < 0){
-                
-                console.log(diff);
+                //discharge section
+                //scan through already packed items and select from there for unpack if it hasn't been unpacked yet
+              var dischargeObj = {"bin": i, "size": diff};
+              dischargeItems.push(dischargeObj);
+               
             }
-            
+           
         }
-        
-         console.log(diffArray);
-        
+        console.log(dischargeItems);
+        console.log(difftotal);
         //compute sequence and score
-        
+        console.log(this);
     }
 };
 
@@ -162,7 +172,7 @@ Chromosome.prototype.scoreFunction = function(){
     }
     
     //store diff of charge or discharge
-    diff = finalProfile[i].capacityUsed - originalProfile[i].capacityUsed;
+    diff = originalProfile[i].capacityUsed - finalProfile[i].capacityUsed;
     diffArray.push(diff);
     
  }
@@ -197,15 +207,22 @@ Chromosome.prototype.mate = function(chromodeux){
   
   var pivot = Math.round(this.schedule.outputBins.length / 2); // mate at center point of length
   
-  var child1 = this.schedule.outputBins.slice(), child2 = chromodeux.schedule.outputBins.slice(); 
-  
+  //var child1 = this.schedule.outputBins.slice(), child2 = chromodeux.schedule.outputBins.slice(); 
+  var child1 = [], child2 = []; 
+  for(var i = 0; i<this.schedule.outputBins.length; i++){
+       //prevent referential copying
+       //child1 is copied from this , child 2 is copied from chromodeux
+      var c1Obj = {}, c2Obj = {};
+      copyObj(this.schedule.outputBins[i], c1Obj); copyObj(chromodeux.schedule.outputBins[i], c2Obj);
+      child1.push(c1Obj); child2.push(c2Obj);
+  }
     //remove second half of 1 and first half of 2
    var child1_half = child1.splice(pivot), child2_half = child2.splice(pivot);
    
    //swap each others wives -- moral dilemma lol
   child1 = child1.concat(child2_half); 
   child2 = child2.concat(child1_half);
-   console.log(this);
+   console.log(this, child1);
    //make them into chromosome objects by using template of the already made chromosomes
    var child1Chromosome = new Chromosome(0,child1,this), child2Chromosome = new Chromosome(0,child2,this);
   
