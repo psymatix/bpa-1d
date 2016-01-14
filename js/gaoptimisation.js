@@ -136,8 +136,6 @@ Chromosome.prototype.arrangeItems = function(){
                 
                 //discharge section
                 //scan through already packed items and select from there for unpack if it hasn't been unpacked yet
-                //ignore the following constraints for now: 1. Pre-charged blocks 2. Maximum power 3. Sum of charge and discharge being > 0 (difftotal).
-                // Add the checks to the score function for eliminating bad chromosomes
                 
               var dischargeObj = {"bin": i, "size": diff};
               dischargeItems.push(dischargeObj);
@@ -156,8 +154,28 @@ Chromosome.prototype.scoreFunction = function(){
   var $this = this;
   var $bp = this.schedule;
   
-   var originalProfile = $bp.originalBins.slice(); // copy of original profile for analysis
-   var finalProfile = $bp.outputBins.slice(); //copy of final profile
+  var originalProfile = $bp.originalBins.slice(); // copy of original profile for analysis
+  var finalProfile = $bp.outputBins.slice(); //copy of final profile
+  
+  
+ //feasibility flags
+ 
+ //1. make sure not more than the peak ess rating is used
+ //2. make sure the sum of energy charged or discharged is not more than the ess capacity
+ //3. make sure the amount of energy removed from ess is not more than the amount stored
+ 
+ var peakViolation = capacityViolation = chargeBalanceViolation = false;
+  var diff = 0, diffArray = [], difftotal = 0; 
+  
+  for(var j=0; j<originalProfile.length; j++ ){
+        //store diff of charge or discharge
+    diff = finalProfile[j].capacityUsed - originalProfile[j].capacityUsed;
+    diffArray.push(diff);
+    difftotal += diff; // running diff sum -- for chargeBalanceViolation
+    pvcheck = (Math.abs(diff) <= this.schedule.parameters.peak) ? false : true; // peak violation check
+    peakViolation = peakViolation || pvcheck; // logical operator, once true cannot be false 
+  
+  }
   
    //sort peaks to run calculation 
    var sortPeaks = function(p){
@@ -166,6 +184,7 @@ Chromosome.prototype.scoreFunction = function(){
   };
   
  sortPeaks(originalProfile); sortPeaks(finalProfile);
+ 
  
  //1. peak shave amount
  
@@ -176,26 +195,34 @@ Chromosome.prototype.scoreFunction = function(){
  var leveldiff = Number( finalProfile[0].capacityUsed ) -  Number( finalProfile[ finalProfile.length -1 ].capacityUsed );
  
  //3. unique demands -- perhaps only on integer forms
- var uniqueDemands = []; var diff = 0, diffArray = [];
+ var uniqueDemands = [];
  
  for(var i = 0; i<finalProfile.length; i++){
     if(uniqueDemands.indexOf( finalProfile[i].capacityUsed ) == -1 ){
         uniqueDemands.push(finalProfile[i].capacityUsed);
     }
     
-    //store diff of charge or discharge
-    diff = originalProfile[i].capacityUsed - finalProfile[i].capacityUsed;
-    diffArray.push(diff);
+  
     
  }
  
  var uniqueDemandsCount = uniqueDemands.length;
  var diffsequence = diffArray.join(",");
- $this.scoreComponents = {"peakShaveAmount":peakshaveamount, "levelling":leveldiff, "uniqueDemands":uniqueDemands, "diffsequence":diffsequence};
+ 
+  $this.scoreComponents = {"peakShaveAmount":peakshaveamount, "levelling":leveldiff, "uniqueDemands":uniqueDemands, "diffsequence":diffsequence};
  
   $this.score = peakshaveamount + Math.pow(uniqueDemandsCount, -1) + Math.pow(leveldiff, -1);
   
-  //add component for feasibility of solution based on battery capacity and demand limit and charge schedule etc
+  //check feasibility of solution based on battery capacity and demand limit and charge schedule etc
+  
+ chargeBalanceViolation = (difftotal < 0) ? true : false; // if difftotal < 0 then we're discharging energy that hasn't been stored
+ 
+ //check SOC in future and also if there is still available capacity
+    
+  
+   if(peakViolation || chargeBalanceViolation){
+      $this.score = 0;
+  }
   
   //stringifySchedule each time score is calculated
    this.sequence = this.stringifySchedule();
@@ -241,7 +268,7 @@ Chromosome.prototype.mate = function(chromodeux){
    var child1Chromosome = new Chromosome(0,child1,this), child2Chromosome = new Chromosome(0,child2,this);
   
   //change properties of original profile to see impact on other objectss
-  console.log(child1Chromosome);
+ 
    return [child1Chromosome, child2Chromosome];
 
 };
@@ -272,7 +299,7 @@ Chromosome.prototype.mutate = function(chance){
  * Population methods: populate, sort, kill
  */
 
-var Population = function(size,maxGeneration){
+var Population = function(size,maxGeneration, generationTolerance){
     
     this.size = size;
     this.members = []; // populate with chromosomes
@@ -281,7 +308,7 @@ var Population = function(size,maxGeneration){
     this.baseSequence  = null; // sequence representing original bins, useful base for computing score of new ones 
     this.topscore = 0;
     this.topscoreGeneration = null;
-    this.generationTolerance = 20;
+    this.generationTolerance = generationTolerance;
     
     //add new members until target size is reached
     // generations are updated by external call to generation method
@@ -335,7 +362,7 @@ Population.prototype.generation = function(){
       
     //5. check if maximum allowed number of generations is reached or topscore has not changed for a given number of generations
     
-        if((this.generationNumber < this.maxGeneration) && ((this.generationNumber - this.topscoreGeneration) < this.generationTolerance)){
+        if((this.generationNumber < this.maxGeneration) && ((this.generationNumber - this.topscoreGeneration) < this.generationTolerance) && this.generationTolerance != null){
             //keep going while generation number is less than max generation 
             //keep going if topscore doesn't change up to a number of generations -- tolerance
          
