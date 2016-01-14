@@ -241,7 +241,7 @@ Chromosome.prototype.mate = function(chromodeux){
    var child1Chromosome = new Chromosome(0,child1,this), child2Chromosome = new Chromosome(0,child2,this);
   
   //change properties of original profile to see impact on other objectss
-
+  console.log(child1Chromosome);
    return [child1Chromosome, child2Chromosome];
 
 };
