@@ -78,7 +78,6 @@ var Chromosome = function(id, src, template){
                        
                            $this.sequence = ""; //string representing output profile sequence for display
                            $this.schedule = msg; 
-                           $this.sequence = $this.stringifySchedule();
                            $this.scoreFunction();
                      
                    });
@@ -88,7 +87,6 @@ var Chromosome = function(id, src, template){
         
         this.schedule = {};
         this.schedule.outputBins = src.slice();
-        this.items = []; //list of items as a result of this formation
         
         //copy other properties from refObj without copying references
         
@@ -98,7 +96,20 @@ var Chromosome = function(id, src, template){
         //prevent referential copying
         copyObj(template.schedule.parameters, this.schedule.parameters);
        
-        //compute items, packed and unpacked, bins, misfits etc, parameters object update
+        //compute items, packed and unpacked, bins, misfits etc, 
+        
+        this.arrangeItems();
+       
+        //compute sequence and score
+        
+         this.scoreFunction();
+     }
+};
+
+Chromosome.prototype.arrangeItems = function(){
+        
+        this.items = []; //list of items as a result of this formation
+        
         //loop through original bins and make comparison
         var diff = 0, diffArray = [], difftotal = 0;
         for (var i=0; i<this.schedule.originalBins.length; i++){
@@ -135,10 +146,7 @@ var Chromosome = function(id, src, template){
            
         }
         
-        //compute sequence and score
-         this.sequence = this.stringifySchedule();
-         this.scoreFunction();
-     }
+    
 };
 
 Chromosome.prototype.scoreFunction = function(){
@@ -187,8 +195,10 @@ Chromosome.prototype.scoreFunction = function(){
  
   $this.score = peakshaveamount + Math.pow(uniqueDemandsCount, -1) + Math.pow(leveldiff, -1);
   
-  //add component for feasibility of solution based on battery capacity and demand limit
+  //add component for feasibility of solution based on battery capacity and demand limit and charge schedule etc
   
+  //stringifySchedule each time score is calculated
+   this.sequence = this.stringifySchedule();
 };
 
 
@@ -231,12 +241,30 @@ Chromosome.prototype.mate = function(chromodeux){
    var child1Chromosome = new Chromosome(0,child1,this), child2Chromosome = new Chromosome(0,child2,this);
   
   //change properties of original profile to see impact on other objectss
-   
+
    return [child1Chromosome, child2Chromosome];
 
 };
 
 
+Chromosome.prototype.mutate = function(chance){
+   
+   // decide whether to mutate or not 
+    if(Math.random() > chance){
+        return;
+    }
+   
+    //pick a random point in the output bins and shake things up
+    var index = Math.floor( Math.random() * this.schedule.outputBins.length );
+    var oldCapacityUsed = this.schedule.outputBins[ index ].capacityUsed,
+            newCapacityUsed = Math.ceil(Math.random() * this.schedule.parameters.binSize );
+    
+    //place a random capacity in that bin and see if that makes a difference    
+    this.schedule.outputBins[ index ].capacityUsed = newCapacityUsed;
+    console.log( oldCapacityUsed, newCapacityUsed);
+    //compute items
+    this.arrangeItems();
+};
 
 
 
@@ -277,7 +305,11 @@ Population.prototype.generation = function(){
     
     
      for (var i = 0; i < this.members.length; i++) {
-           this.members[i].scoreFunction();   
+         //mutate by chance here -- 0.5 is 50% chance of mutation
+         this.members[i].mutate(0.5);
+         
+         //calculate score for everyone
+          this.members[i].scoreFunction();   
         };
 
     //2. Sort in descending order of score from the highest to the lowest
@@ -294,13 +326,15 @@ Population.prototype.generation = function(){
         
         var children = this.members[0].mate(this.members[1]);
         this.members.splice(this.members.length - 2, 2, children[0], children[1]);
-
+        
+        
     //4. Mating creates new generation so update count
         this.generationNumber++;
         
         var scope = this; // local reference for population object
       
     //5. check if maximum allowed number of generations is reached or topscore has not changed for a given number of generations
+    
         if((this.generationNumber < this.maxGeneration) && ((this.generationNumber - this.topscoreGeneration) < this.generationTolerance)){
             //keep going while generation number is less than max generation 
             //keep going if topscore doesn't change up to a number of generations -- tolerance
