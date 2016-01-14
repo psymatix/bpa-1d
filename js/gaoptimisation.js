@@ -122,19 +122,23 @@ var Chromosome = function(id, src, template){
                 this.items.push(it);
                 
             }else if(diff < 0){
+                
                 //discharge section
                 //scan through already packed items and select from there for unpack if it hasn't been unpacked yet
+                //ignore the following constraints for now: 1. Pre-charged blocks 2. Maximum power 3. Sum of charge and discharge being > 0 (difftotal).
+                // Add the checks to the score function for eliminating bad chromosomes
+                
               var dischargeObj = {"bin": i, "size": diff};
               dischargeItems.push(dischargeObj);
                
             }
            
         }
-        console.log(dischargeItems);
-        console.log(difftotal);
+        
         //compute sequence and score
-        console.log(this);
-    }
+         this.sequence = this.stringifySchedule();
+         this.scoreFunction();
+     }
 };
 
 Chromosome.prototype.scoreFunction = function(){
@@ -222,13 +226,13 @@ Chromosome.prototype.mate = function(chromodeux){
    //swap each others wives -- moral dilemma lol
   child1 = child1.concat(child2_half); 
   child2 = child2.concat(child1_half);
-   console.log(this, child1);
-   //make them into chromosome objects by using template of the already made chromosomes
+ 
+  //make them into chromosome objects by using template of the already made chromosomes
    var child1Chromosome = new Chromosome(0,child1,this), child2Chromosome = new Chromosome(0,child2,this);
   
   //change properties of original profile to see impact on other objectss
    
-
+   return [child1Chromosome, child2Chromosome];
 
 };
 
@@ -252,6 +256,8 @@ var Population = function(size,maxGeneration){
     this.generationTolerance = 20;
     
     //add new members until target size is reached
+    // generations are updated by external call to generation method
+    
     id=0;
     while(size--){
       var chromosome = new Chromosome(id, "ajax"); // chromosome is an output schedule
@@ -267,10 +273,15 @@ var Population = function(size,maxGeneration){
 
 Population.prototype.generation = function(){
     
+    //1. Calculate the score for each chromosome in this generation
+    
+    
      for (var i = 0; i < this.members.length; i++) {
            this.members[i].scoreFunction();   
         };
 
+    //2. Sort in descending order of score from the highest to the lowest
+    
         this.sort();
         this.display();
         
@@ -279,13 +290,17 @@ Population.prototype.generation = function(){
             this.topscoreGeneration = this.generationNumber;
         }
         
+    //3. Mate the two fittest chromosomes to get two offspring, and elminate the weakest in the population
+        
         var children = this.members[0].mate(this.members[1]);
         this.members.splice(this.members.length - 2, 2, children[0], children[1]);
 
+    //4. Mating creates new generation so update count
         this.generationNumber++;
         
         var scope = this; // local reference for population object
-        
+      
+    //5. check if maximum allowed number of generations is reached or topscore has not changed for a given number of generations
         if((this.generationNumber < this.maxGeneration) && ((this.generationNumber - this.topscoreGeneration) < this.generationTolerance)){
             //keep going while generation number is less than max generation 
             //keep going if topscore doesn't change up to a number of generations -- tolerance
@@ -313,8 +328,10 @@ Population.prototype.sort = function(){
 
 Population.prototype.display = function(){
   //show current generation sequence, score, base sequence and generation count
+   $("#generationNumber").text(this.generationNumber);
+   
    var displayArea = $("#generationList"),
-           $template = "<ul>" + $(".chromosomeInfo").eq(0).html() + "</ul>";
+   $template = "<ul>" + $(".chromosomeInfo").eq(0).html() + "</ul>";
    
    displayArea.empty(); 
    for(var i=0; i<this.members.length; i++){
