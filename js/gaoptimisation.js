@@ -261,7 +261,7 @@ Chromosome.prototype.mutate = function(chance){
     
     //place a random capacity in that bin and see if that makes a difference    
     this.schedule.outputBins[ index ].capacityUsed = newCapacityUsed;
-    console.log( oldCapacityUsed, newCapacityUsed);
+   
     //compute items
     this.arrangeItems();
 };
@@ -318,7 +318,7 @@ Population.prototype.generation = function(){
         this.display();
         
         if(this.members[0].score > this.topscore){
-            this.topscore = this.members[0].score;
+            this.topscore = this.members[0].score; 
             this.topscoreGeneration = this.generationNumber;
         }
         
@@ -338,8 +338,10 @@ Population.prototype.generation = function(){
         if((this.generationNumber < this.maxGeneration) && ((this.generationNumber - this.topscoreGeneration) < this.generationTolerance)){
             //keep going while generation number is less than max generation 
             //keep going if topscore doesn't change up to a number of generations -- tolerance
-            
+         
             setTimeout(function() { scope.generation(); } , 20);
+        }else{
+             this.display();
         }
     
 };
@@ -363,6 +365,7 @@ Population.prototype.sort = function(){
 Population.prototype.display = function(){
   //show current generation sequence, score, base sequence and generation count
    $("#generationNumber").text(this.generationNumber);
+   $("#topScoreGeneration").text(this.topscoreGeneration);
    
    var displayArea = $("#generationList"),
    $template = "<ul>" + $(".chromosomeInfo").eq(0).html() + "</ul>";
