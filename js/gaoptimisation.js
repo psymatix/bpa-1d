@@ -165,13 +165,15 @@ Chromosome.prototype.scoreFunction = function(){
  //3. make sure the amount of energy removed from ess is not more than the amount stored
  
  var peakViolation = capacityViolation = chargeBalanceViolation = false;
-  var diff = 0, diffArray = [], difftotal = 0; 
+  var diff = 0, diffArray = [], difftotal = 0, chargeSum = 0; 
   
   for(var j=0; j<originalProfile.length; j++ ){
         //store diff of charge or discharge
     diff = finalProfile[j].capacityUsed - originalProfile[j].capacityUsed;
     diffArray.push(diff);
     difftotal += diff; // running diff sum -- for chargeBalanceViolation
+    chargeSum = (diff > 0) ? (chargeSum + diff) : chargeSum;
+    
     pvcheck = (Math.abs(diff) <= this.schedule.parameters.peak) ? false : true; // peak violation check
     peakViolation = peakViolation || pvcheck; // logical operator, once true cannot be false 
   
@@ -215,12 +217,12 @@ Chromosome.prototype.scoreFunction = function(){
   
   //check feasibility of solution based on battery capacity and demand limit and charge schedule etc
   
- chargeBalanceViolation = (difftotal < 0) ? true : false; // if difftotal < 0 then we're discharging energy that hasn't been stored
- 
+chargeBalanceViolation = (difftotal < 0) ? true : false; // if difftotal < 0 then we're discharging energy that hasn't been stored
+capacityViolation = (chargeSum > $this.schedule.parameters.esscapacity) ? true :  false; //check that ess total capacity hasn't been exceeded in this solution
+
  //check SOC in future and also if there is still available capacity
-    
   
-   if(peakViolation || chargeBalanceViolation){
+   if(peakViolation || chargeBalanceViolation || capacityViolation){
       $this.score = 0;
   }
   
@@ -281,6 +283,12 @@ Chromosome.prototype.mutate = function(chance){
         return;
     }
    
+   //make mutation more drastic by randomizing the number of indices that can be mutated / number of times mutation should modify this chromosome
+   var mutateIndexCount = 0;
+   mutateIndexCount = 1;// mutateIndexCount = Math.ceil( Math.random() * this.schedule.outputBins.length ); // ceil because this is a number selection rather than an index selection
+   //possibility of mutating more than one index
+   
+   for (var i=0; i < mutateIndexCount ; i++){
     //pick a random point in the output bins and shake things up
     var index = Math.floor( Math.random() * this.schedule.outputBins.length );
     var oldCapacityUsed = this.schedule.outputBins[ index ].capacityUsed,
@@ -288,7 +296,7 @@ Chromosome.prototype.mutate = function(chance){
     
     //place a random capacity in that bin and see if that makes a difference    
     this.schedule.outputBins[ index ].capacityUsed = newCapacityUsed;
-   
+   }
     //compute items
     this.arrangeItems();
 };
@@ -321,8 +329,7 @@ var Population = function(size,maxGeneration, generationTolerance){
     }
     
     //set base sequence once, based on original profile in one of the members
-    
-    
+  
 };
 
 
@@ -370,7 +377,7 @@ Population.prototype.generation = function(){
         }else{
              this.display();
         }
-    
+
 };
 
 Population.prototype.sort = function(){
