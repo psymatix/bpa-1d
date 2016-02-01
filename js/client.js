@@ -144,6 +144,47 @@ Client.showSummary = function($res){
                                              return ret;
 
                                         });
+                                        
+                                        
+                                        
+   $('[data-show="solutionCost"]').text(function(){
+       
+       var hourlypricesScaled = {
+           "0000":0.17,
+           "0100":0.17,
+           "0200":0.17,
+           "0300":0.17,
+           "0400":0.17,
+           "0500":0.17,
+           "0600":0.17,
+           "0700":0.3125,
+           "0800":0.3125,
+           "0900":0.3125,
+           "1000":0.3125,
+           "1100":0.25,
+           "1200":0.25,
+           "1300":0.25,
+           "1400":0.25,
+           "1500":0.25,
+           "1600":0.25,
+           "1700":0.3125,
+           "1800":0.3125,
+           "1900":0.17,
+           "2000":0.17,
+           "2100":0.17,
+           "2200":0.17,
+           "2300":0.17
+       };
+       
+       var totalcost = 0, scale = 2.5;
+       
+       $res.outputBins.forEach(function(v){
+           totalcost += (v.capacityUsed * hourlypricesScaled[v.position]);
+       });
+       
+       return totalcost;
+       
+   });                                     
   
 };
 
