@@ -12,6 +12,7 @@ Client.init = function(){
                             //summary
                              Client.showSummary(msg);
                              
+                             var ymax = msg.parameters.binSize;
                              
                        //use items to show charging and discharging distinctly
                           
@@ -38,26 +39,26 @@ Client.init = function(){
                              //charts 
                              
                                 //original bins 
-                                Client.plotChart(msg.originalBins, {"id": "originalProfileChart", "width": 800, "height": 600});
+                                Client.plotChart(msg.originalBins, {"id": "originalProfileChart", "width": 800, "height": 600}, ymax);
                                 
                                   //charging items
-                                Client.plotChart(chargeCycle, {"id": "chargeCycleChart", "width": 800, "height": 600, "fill":"#FF4747"});
+                                Client.plotChart(chargeCycle, {"id": "chargeCycleChart", "width": 800, "height": 600, "fill":"#FF4747"},ymax);
                                 
                                  //charging bins 
-                                Client.plotChart(msg.packedBins, {"id": "chargingProfileChart", "width": 800, "height": 600});
+                                Client.plotChart(msg.packedBins, {"id": "chargingProfileChart", "width": 800, "height": 600},ymax);
                                 
                                 //originalBins inverted
                                 
-                                 Client.plotChart(msg.originalBinsInverted, {"id": "originalProfileInvertedChart", "width": 800, "height": 600});
+                                 Client.plotChart(msg.originalBinsInverted, {"id": "originalProfileInvertedChart", "width": 800, "height": 600}, ymax);
                                 
                                  //discharging cycle
-                                Client.plotChart(dischargeCycle, {"id": "dischargeCycleChart", "width": 800, "height": 600, "fill":"#70B870"});
+                                Client.plotChart(dischargeCycle, {"id": "dischargeCycleChart", "width": 800, "height": 600, "fill":"#70B870"}, ymax);
                                 
                                  //discharging bins 
-                                Client.plotChart(msg.inverseBins, {"id": "dischargingProfileChart", "width": 800, "height": 600});
+                                Client.plotChart(msg.inverseBins, {"id": "dischargingProfileChart", "width": 800, "height": 600}, ymax);
                                 
                                  //output bins 
-                                Client.plotChart(msg.outputBins, {"id": "outputProfileChart", "width": 800, "height": 600});
+                                Client.plotChart(msg.outputBins, {"id": "outputProfileChart", "width": 800, "height": 600}, ymax);
                                 
                      
                              
@@ -147,7 +148,7 @@ Client.showSummary = function($res){
   
 };
 
-Client.plotChart = function(dataset, $elemdata){
+Client.plotChart = function(dataset, $elemdata, ymax){
     
     var margin = {top: 20, right: 30, bottom: 30, left: 40};
     
@@ -163,9 +164,9 @@ Client.plotChart = function(dataset, $elemdata){
     var labels = dataset.map(function(v){
         return v.position;
     });
-    
+    ymaximum = (typeof ymax != "undefined") ? ymax : 10;
     var y = d3.scale.linear()
-            .domain([0,10]) // maximum is 10
+            .domain([0,ymaximum]) // maximum is 10
             .range([height,0]);
     
     var x = d3.scale.ordinal()
