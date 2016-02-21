@@ -213,7 +213,9 @@ Chromosome.prototype.scoreFunction = function(){
  
   $this.scoreComponents = {"peakShaveAmount":peakshaveamount, "levelling":leveldiff, "uniqueDemands":uniqueDemands, "diffsequence":diffsequence};
  
-  $this.score = peakshaveamount + Math.pow(uniqueDemandsCount, -1) + Math.pow(leveldiff, -1);
+ // $this.score = peakshaveamount + Math.pow(uniqueDemandsCount, -1) + Math.pow(leveldiff, -1); <-- removed unique demands
+ $this.score = peakshaveamount + Math.pow(leveldiff, -1); 
+  
   
   //check feasibility of solution based on battery capacity and demand limit and charge schedule etc
   
