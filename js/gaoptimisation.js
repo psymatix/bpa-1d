@@ -71,6 +71,7 @@ var Chromosome = function(id, src, template){
     this.id = id;
    
     var $this = this; // store scope reference to the chromosome for ajax call
+     
     if(src == "ajax" || typeof src == "undefined"){
     
         //get profile objects from http request
@@ -79,9 +80,9 @@ var Chromosome = function(id, src, template){
                            $this.sequence = ""; //string representing output profile sequence for display
                            $this.schedule = msg; 
                            $this.scoreFunction();
-                     
+                                             
                    });
-                   
+                     //console.log($this);
     }else if(typeof src =="object"){
         //create object here and use src as output bins schedule;
         
@@ -325,13 +326,12 @@ var Population = function(size,maxGeneration, generationTolerance){
     
     id=0;
     while(size--){
-      var chromosome = new Chromosome(id, "ajax"); // chromosome is an output schedule
-      this.members.push(chromosome);
+      var chromosome = new Chromosome(id, "ajax", false); // chromosome is an output schedule
+      this.members.push(chromosome); 
       id++;
     }
-    
     //set base sequence once, based on original profile in one of the members
-  
+
 };
 
 
@@ -370,7 +370,7 @@ Population.prototype.generation = function(){
         var scope = this; // local reference for population object
       
     //5. check if maximum allowed number of generations is reached or topscore has not changed for a given number of generations
-    
+  
         if((this.generationNumber < this.maxGeneration) && ((this.generationNumber - this.topscoreGeneration) < this.generationTolerance) && this.generationTolerance != null){
             //keep going while generation number is less than max generation 
             //keep going if topscore doesn't change up to a number of generations -- tolerance
@@ -411,7 +411,7 @@ Population.prototype.display = function(){
 
         $html = ""; //reset
         $html =  $.parseHTML($template);
-            
+           
         if(typeof this.members[i].sequence != "undefined"){  
             
                 var $chromosome =  this.members[i]; //chromosome ref
