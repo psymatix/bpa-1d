@@ -24,13 +24,11 @@ var item = function(size){
     return i;
 };
 
-
-
 var bin = function(id, size, capacityUsed){
     var b = {};
     b.id = id;
     b.size = parseInt(size);
-    b.capacityUsed = capacityUsed ? parseInt(capacityUsed) : 0;
+    b.capacityUsed = capacityUsed ? Number(capacityUsed) : 0;
     b.open = true;
     b.items = [];
     b.position = null; // for time period in profile
@@ -237,7 +235,7 @@ capacityViolation = (chargeSum > $this.schedule.parameters.esscapacity) ? true :
 Chromosome.prototype.stringifySchedule = function(){
   var sequencestr = "";
     for(var i=0; i<this.schedule.outputBins.length;i++){
-           sequencestr += this.schedule.outputBins[i].capacityUsed.toString();
+           sequencestr += this.schedule.outputBins[i].capacityUsed.toString() + " ";
         }
     return sequencestr;
 };
@@ -342,7 +340,7 @@ Population.prototype.generation = function(){
     
      for (var i = 0; i < this.members.length; i++) {
          //mutate by chance here -- 0.5 is 50% chance of mutation
-         this.members[i].mutate(0.5);
+         this.members[i].mutate(0.1);
          
          //calculate score for everyone
           this.members[i].scoreFunction();   
@@ -370,7 +368,7 @@ Population.prototype.generation = function(){
         var scope = this; // local reference for population object
       
     //5. check if maximum allowed number of generations is reached or topscore has not changed for a given number of generations
-  
+ 
         if((this.generationNumber < this.maxGeneration) && ((this.generationNumber - this.topscoreGeneration) < this.generationTolerance) && this.generationTolerance != null){
             //keep going while generation number is less than max generation 
             //keep going if topscore doesn't change up to a number of generations -- tolerance
@@ -379,7 +377,8 @@ Population.prototype.generation = function(){
         }else{
              this.display();
         }
-
+ /*
+this.display();*/
 };
 
 Population.prototype.sort = function(){
