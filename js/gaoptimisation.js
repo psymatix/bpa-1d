@@ -212,9 +212,9 @@ Chromosome.prototype.scoreFunction = function(){
  
   $this.scoreComponents = {"peakShaveAmount":peakshaveamount, "levelling":leveldiff, "uniqueDemands":uniqueDemands, "diffsequence":diffsequence};
  
- // $this.score = peakshaveamount + Math.pow(uniqueDemandsCount, -1) + Math.pow(leveldiff, -1); <-- removed unique demands
+ // $this.score = peakshaveamount + Math.pow(uniqueDemandsCount, -1) + Math.pow(leveldiff, -1); <-- considers all 3
  $this.score = peakshaveamount + Math.pow(leveldiff, -1); 
-  
+//  $this.score = peakshaveamount;
   
   //check feasibility of solution based on battery capacity and demand limit and charge schedule etc
   
@@ -293,8 +293,10 @@ Chromosome.prototype.mutate = function(chance){
     //pick a random point in the output bins and shake things up
     var index = Math.floor( Math.random() * this.schedule.outputBins.length );
     var oldCapacityUsed = this.schedule.outputBins[ index ].capacityUsed,
-            newCapacityUsed = Math.ceil(Math.random() * this.schedule.parameters.binSize );
+            newCapacityUsed = Math.random() * this.schedule.parameters.binSize ;
     
+            newCapacityUsed = Number.isInteger(oldCapacityUsed) ? Math.ceil(newCapacityUsed) : newCapacityUsed.toFixed(2); //can be interger or float
+            
     //place a random capacity in that bin and see if that makes a difference    
     this.schedule.outputBins[ index ].capacityUsed = newCapacityUsed;
    }
@@ -340,7 +342,7 @@ Population.prototype.generation = function(){
     
      for (var i = 0; i < this.members.length; i++) {
          //mutate by chance here -- 0.5 is 50% chance of mutation
-         this.members[i].mutate(0.1);
+         this.members[i].mutate(0.25);
          
          //calculate score for everyone
           this.members[i].scoreFunction();   
