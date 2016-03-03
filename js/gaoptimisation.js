@@ -361,7 +361,17 @@ Population.prototype.generation = function(){
     //3. Mate the two fittest chromosomes to get two offspring, and elminate the weakest in the population
         
         var children = this.members[0].mate(this.members[1]);
-        this.members.splice(this.members.length - 2, 2, children[0], children[1]);
+        //compare scores of offspring with weakest
+        if(this.members[this.members.length - 2].score < children[0].score){
+            this.members.splice(this.members.length - 2, 1, children[0]);
+        }
+        
+        
+        if(this.members[this.members.length - 1].score < children[1].score){
+            this.members.splice(this.members.length - 1, 1, children[1]);
+        }
+        
+        //this.members.splice(this.members.length - 2, 2, children[0], children[1]);
         
         
     //4. Mating creates new generation so update count
