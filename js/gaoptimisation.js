@@ -277,7 +277,7 @@ Chromosome.prototype.mate = function(chromodeux){
 };
 
 
-Chromosome.prototype.mutate = function(chance){
+Chromosome.prototype.mutate = function(chance, rangeMin, rangeMax){
    
    // decide whether to mutate or not 
     if(Math.random() > chance){
@@ -304,8 +304,10 @@ Chromosome.prototype.mutate = function(chance){
    for (var i=0; i < mutateIndexCount ; i++){
     //pick a random point in the output bins and shake things up
     var index = Math.floor( Math.random() * this.schedule.outputBins.length );
-    var oldCapacityUsed = this.schedule.outputBins[ index ].capacityUsed,
-            newCapacityUsed = Math.random() * this.schedule.parameters.binSize ;
+    var oldCapacityUsed = this.schedule.outputBins[ index ].capacityUsed;
+    
+    //restrict mutation to a given range
+    var newCapacityUsed = (typeof rangeMin != "undefined" && typeof rangeMax != "undefined") ? ( Math.random() * (rangeMax - rangeMin) + rangeMin ) : ( Math.random() * this.schedule.parameters.binSize );
     
             newCapacityUsed = Number.isInteger(oldCapacityUsed) ? Math.ceil(newCapacityUsed) : newCapacityUsed.toFixed(2); //can be interger or float
             
@@ -364,11 +366,14 @@ Population.prototype.generation = function(){
     
     //1. Calculate the score for each chromosome in this generation
     
+    //mutation for only top guys -- 25%
+    mutationQuota = 0.25;
     
      for (var i = 0; i < this.members.length; i++) {
          //mutate by chance here -- 0.5 is 50% chance of mutation
-         this.members[i].mutate(0.5);
-         
+         if(i <= (mutationQuota*this.members.length) ){
+         this.members[i].mutate(0.5, 55, 93);
+         }
          //calculate score for everyone
           this.members[i].scoreFunction();   
         };
