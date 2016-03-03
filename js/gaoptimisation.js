@@ -289,6 +289,18 @@ Chromosome.prototype.mutate = function(chance){
    mutateIndexCount = 1;// mutateIndexCount = Math.ceil( Math.random() * this.schedule.outputBins.length ); // ceil because this is a number selection rather than an index selection
    //possibility of mutating more than one index
    
+   var oldScore = this.score;
+   
+   //make a copy to prevent weaker mutations going back into population
+ //  var mutationCopy = new Chromosome(0,this,this);
+   
+   var mutationCopy = [];
+  for(var i = 0; i<this.schedule.outputBins.length; i++){
+          mutationCopy.push(this.schedule.outputBins[i].capacityUsed);
+  }
+   
+   
+   
    for (var i=0; i < mutateIndexCount ; i++){
     //pick a random point in the output bins and shake things up
     var index = Math.floor( Math.random() * this.schedule.outputBins.length );
@@ -300,8 +312,21 @@ Chromosome.prototype.mutate = function(chance){
     //place a random capacity in that bin and see if that makes a difference    
     this.schedule.outputBins[ index ].capacityUsed = newCapacityUsed;
    }
-    //compute items
+    //compute items and score again
     this.arrangeItems();
+    this.scoreFunction();
+   
+    
+    if(this.score < oldScore){
+        console.log(this.score, oldScore);
+        //if less score, keep old schedule
+        this.schedule.outputBins[ index ].capacityUsed = mutationCopy[ index ];
+        //compute items
+        this.arrangeItems();
+        this.scoreFunction();
+        
+    }
+    
 };
 
 
@@ -342,7 +367,7 @@ Population.prototype.generation = function(){
     
      for (var i = 0; i < this.members.length; i++) {
          //mutate by chance here -- 0.5 is 50% chance of mutation
-         this.members[i].mutate(0.25);
+         this.members[i].mutate(0.5);
          
          //calculate score for everyone
           this.members[i].scoreFunction();   
@@ -356,6 +381,7 @@ Population.prototype.generation = function(){
         if(this.members[0].score > this.topscore){
             this.topscore = this.members[0].score; 
             this.topscoreGeneration = this.generationNumber;
+            this.updateTopScoreHistory();
         }
         
     //3. Mate the two fittest chromosomes to get two offspring, and elminate the weakest in the population
@@ -450,6 +476,50 @@ Population.prototype.display = function(){
         displayArea.append( $html );
      
    }
+   
+    
+};
+
+
+
+
+Population.prototype.updateTopScoreHistory = function(){
+  //show current generation sequence, score, base sequence and generation count
+   $("#generationNumber").text(this.generationNumber);
+   $("#topScoreGeneration").text(this.topscoreGeneration);
+   
+   var displayArea = $("#topScoreHistory"),
+   $template = "<ul>" + $(".chromosomeInfo").eq(0).html() + "</ul>";
+
+        $html = ""; //reset
+        $html =  $.parseHTML($template);
+           
+        if(typeof this.members[0].sequence != "undefined"){  
+            
+                var $chromosome =  this.members[0]; //chromosome ref
+                
+                //not ready yet -- show when ready
+                $(".sequence", $html).text($chromosome.sequence);
+                $(".score", $html).text($chromosome.score);
+                
+                //score components
+                $('[data-component-type="peak_shave"]', $html).text($chromosome.scoreComponents.peakShaveAmount);
+                $('[data-component-type="unique_demands"]', $html).text($chromosome.scoreComponents.uniqueDemands.length);
+                $('[data-component-type="levelling"]', $html).text($chromosome.scoreComponents.levelling);
+                $('[data-component-type="diffsequence"]', $html).text($chromosome.scoreComponents.diffsequence);
+                
+            //set flag
+                $(".sequence", $html).attr("data-ready","yes");
+            }else{
+                //set flag and add a listener function to check when it is ready -- custom event?
+                
+                $(".sequence", $html).attr("data-ready","no");
+                
+            }
+            
+        $(".sequence", $html).attr("data-id",this.members[0].id);  
+        displayArea.append("Generation:" + this.generationNumber);
+        displayArea.append( $html );
    
     
 };
