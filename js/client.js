@@ -3,7 +3,7 @@ var Client = Client || {};
 Client.init = function(){
   //compute btn
                 $("#computeBtn").click(function(e){
-                  
+                 
                      $.ajax({
                          url: "http://localhost:1337",
                          }).done(function(msg){
