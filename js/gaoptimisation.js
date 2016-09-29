@@ -372,7 +372,7 @@ Population.prototype.generation = function(){
      for (var i = 0; i < this.members.length; i++) {
          //mutate by chance here -- 0.5 is 50% chance of mutation
          if(i <= (mutationQuota*this.members.length) ){
-         this.members[i].mutate(0.5, 55, 93);
+         this.members[i].mutate(0.3, 25, 90);
          }
          //calculate score for everyone
           this.members[i].scoreFunction();   
