@@ -4,106 +4,106 @@ and open the template in the editor.
 -->
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>BPA 1D</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <script src="js/jquery-1.11.2.min.js"></script>
-        <script src="js/client.js"></script>
-      <!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script> -->
-      <script src="js/d3.min.js"></script>
-       
-<style>
 
-.chart rect {
-  fill: steelblue;
-}
+<head>
+    <title>BPA 1D</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="js/jquery-1.11.2.min.js"></script>
+    <script src="js/client.js"></script>
+    <!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script> -->
+    <script src="js/d3.min.js"></script>
 
-.chart text {
-  fill: white;
-  font: 10px sans-serif;
-  text-anchor: end;
-}
+    <style>
+        .chart rect {
+            fill: steelblue;
+        }
 
-.axis text {
-  font: 10px sans-serif;
-  fill: #000;
-}
+        .chart text {
+            fill: white;
+            font: 10px sans-serif;
+            text-anchor: end;
+        }
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
+        .axis text {
+            font: 10px sans-serif;
+            fill: #000;
+        }
 
-.chartWrapper {
-    float: left;
-    clear: none;
-    margin: 15px;
-    overflow: hidden;
-}
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
 
-</style>  
-    </head>
-    <body>
-        <div><a href="#" id="computeBtn">Compute</a></div>
-        <h2>Computation Summary</h2>
-        <div>
-            <strong>Original Peak:</strong> <span data-show="originalPeak"></span><br>
-            <strong>Final Peak:</strong> <span data-show="finalPeak"></span><br>
-            <strong>Max kWh</strong> <span data-show="maxEnergy"></span><br>
-            <strong>Original Energy Consumed (kWh/%)</strong> <span data-show="originalEnergy"></span><br>
-            <strong>Final Energy Consumed (kWh/%)</strong> <span data-show="finalEnergy"></span><br>
-            <strong>Storage combination:</strong> <span data-show="storageCombination"></span><br>
-            <strong>Storage Used in Charge cycle:</strong> <span data-show="storageCharged"></span><br>
-            <strong>Storage Used in Discharge cycle:</strong> <span data-show="storageDischarged"></span><br>
-            <strong>Storage not used in Charge cycle:</strong> <span data-show="packMisfits"></span><br>
-            <strong>Storage not used in Discharge cycle:</strong> <span data-show="unpackMisfits"></span><br>
-            <strong>Solution Cost:</strong> <span data-show="solutionCost"></span><br>
-        </div>
-        <div class="chartWrapper">
-              <h3>Original Profile</h3>
-            <svg id="originalProfileChart" class="chart"></svg>
-        </div>
-        
-        
-        <div class="chartWrapper">
-              <h3>Charge Profile</h3>
-            <svg id="chargeCycleChart" class="chart"></svg>
-        </div>
-        
-        <div class="chartWrapper">
-            <h3>Charging Profile Combined with Original</h3>
-            <svg id="chargingProfileChart" class="chart"></svg>
-        </div>
-        
-         <div class="chartWrapper">
-            <h3>Original Profile Inverted</h3>
-            <svg id="originalProfileInvertedChart" class="chart"></svg>
-        </div>
-        
-           <div class="chartWrapper">
-              <h3>Discharge Profile</h3>
-            <svg id="dischargeCycleChart" class="chart"></svg>
-        </div>
-        
-        
-        
-        <div class="chartWrapper">
-              <h3>Discharging Profile combined with Inverted Original</h3>
-            <svg id="dischargingProfileChart" class="chart"></svg>
-        </div>
-        
-        <div class="chartWrapper">
-              <h3>Final Profile</h3>
-            <svg id="outputProfileChart" class="chart"></svg>
-        </div>
-        
-        <script>
-           $(document).ready(function(){
-               Client.init();
-            });
-            
-        </script>
-    </body>
+        .chartWrapper {
+            float: left;
+            clear: none;
+            margin: 15px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div><a href="#" id="computeBtn">Compute</a></div>
+    <h2>Computation Summary</h2>
+    <div>
+        <strong>Original Peak:</strong> <span data-show="originalPeak"></span><br>
+        <strong>Final Peak:</strong> <span data-show="finalPeak"></span><br>
+        <strong>Max kWh</strong> <span data-show="maxEnergy"></span><br>
+        <strong>Original Energy Consumed (kWh/%)</strong> <span data-show="originalEnergy"></span><br>
+        <strong>Final Energy Consumed (kWh/%)</strong> <span data-show="finalEnergy"></span><br>
+        <strong>Storage combination:</strong> <span data-show="storageCombination"></span><br>
+        <strong>Storage Used in Charge cycle:</strong> <span data-show="storageCharged"></span><br>
+        <strong>Storage Used in Discharge cycle:</strong> <span data-show="storageDischarged"></span><br>
+        <strong>Storage not used in Charge cycle:</strong> <span data-show="packMisfits"></span><br>
+        <strong>Storage not used in Discharge cycle:</strong> <span data-show="unpackMisfits"></span><br>
+        <strong>Solution Cost:</strong> <span data-show="solutionCost"></span><br>
+    </div>
+    <div class="chartWrapper">
+        <h3>Original Profile</h3>
+        <svg id="originalProfileChart" class="chart"></svg>
+    </div>
+
+
+    <div class="chartWrapper">
+        <h3>Charge Profile</h3>
+        <svg id="chargeCycleChart" class="chart"></svg>
+    </div>
+
+    <div class="chartWrapper">
+        <h3>Charging Profile Combined with Original</h3>
+        <svg id="chargingProfileChart" class="chart"></svg>
+    </div>
+
+    <div class="chartWrapper">
+        <h3>Original Profile Inverted</h3>
+        <svg id="originalProfileInvertedChart" class="chart"></svg>
+    </div>
+
+    <div class="chartWrapper">
+        <h3>Discharge Profile</h3>
+        <svg id="dischargeCycleChart" class="chart"></svg>
+    </div>
+
+
+
+    <div class="chartWrapper">
+        <h3>Discharging Profile combined with Inverted Original</h3>
+        <svg id="dischargingProfileChart" class="chart"></svg>
+    </div>
+
+    <div class="chartWrapper">
+        <h3>Final Profile</h3>
+        <svg id="outputProfileChart" class="chart"></svg>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            Client.init();
+        });
+    </script>
+</body>
+
 </html>
